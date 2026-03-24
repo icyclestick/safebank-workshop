@@ -1,0 +1,80 @@
+version: '3.8'
+
+# ============================================================
+# Network Security Workshop — Target Environment
+# ============================================================
+# This creates the VICTIM network that participants attack
+# from their Kali Linux VMs. After running 'docker compose up',
+# run './setup.sh' to connect your Kali machine to the lab network.
+# ============================================================
+
+services:
+  # ============================================================
+  # VICTIM — Simulates a user browsing the vulnerable web app
+  # Sends login + transfer requests every few seconds with
+  # cookies, JWT tokens, and realistic headers for sniffing
+  # ============================================================
+  victim:
+    image: alpine
+    container_name: lab-victim
+    command: >
+      sh -c "
+        apk add --no-cache curl bind-tools &&
+        echo '[VICTIM] Starting browsing simulation...' &&
+        while true; do
+          echo '[VICTIM] Logging in...' &&
+          curl -s -b 'session_token=s3cr3t-t0k3n-abc123xyz'
+            -H 'User-Agent: Mozilla/5.0 VictimBrowser'
+            -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.dXNlcjphZG1pbg.fake_jwt_token'
+            http://10.0.0.20/login > /dev/null;
+          sleep 3;
+          echo '[VICTIM] Transferring funds...' &&
+          curl -s -X POST
+            -b 'session_token=s3cr3t-t0k3n-abc123xyz'
+            -H 'User-Agent: Mozilla/5.0 VictimBrowser'
+            -H 'Content-Type: application/json'
+            -d '{\"to\":\"user2\",\"amount\":500}'
+            http://10.0.0.20/transfer > /dev/null;
+          sleep 5;
+        done
+      "
+    depends_on:
+      - server
+      - dns
+    networks:
+      lab_net:
+        ipv4_address: 10.0.0.15
+    dns:
+      - 10.0.0.30
+
+  # ============================================================
+  # SERVER — Vulnerable banking web app (Nginx)
+  # Serves login/transfer pages and sets insecure cookies
+  # ============================================================
+  server:
+    build: ./server
+    container_name: lab-server
+    networks:
+      lab_net:
+        ipv4_address: 10.0.0.20
+
+  # ============================================================
+  # DNS — Lab DNS resolver (dnsmasq)
+  # Resolves workshop.lab -> 10.0.0.20 (the server)
+  # Participants will spoof this to redirect traffic
+  # ============================================================
+  dns:
+    build: ./dns
+    container_name: lab-dns
+    cap_add:
+      - NET_ADMIN
+    networks:
+      lab_net:
+        ipv4_address: 10.0.0.30
+
+networks:
+  lab_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/24

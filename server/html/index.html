@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureBank Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container { text-align: center; max-width: 500px; padding: 2rem; }
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; color: #00d4ff; }
+        p { color: #888; margin-bottom: 2rem; }
+        .links a {
+            display: inline-block;
+            margin: 0.5rem;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, #00d4ff22, #00d4ff11);
+            border: 1px solid #00d4ff44;
+            color: #00d4ff;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .links a:hover {
+            background: #00d4ff33;
+            box-shadow: 0 0 20px #00d4ff22;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 SecureBank Portal</h1>
+        <p>Welcome to the SecureBank online banking platform.</p>
+        <div class="links">
+            <a href="/login">Login</a>
+            <a href="/transfer">Transfer Funds</a>
+        </div>
+    </div>
+</body>
+</html>

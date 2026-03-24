@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureBank - Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: #12122a;
+            border: 1px solid #1e1e3a;
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 380px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        h2 { color: #00d4ff; margin-bottom: 0.5rem; }
+        .subtitle { color: #666; font-size: 0.85rem; margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.3rem; color: #aaa; font-size: 0.85rem; }
+        input {
+            width: 100%;
+            padding: 0.7rem;
+            margin-bottom: 1rem;
+            background: #0a0a1a;
+            border: 1px solid #2a2a4a;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+        }
+        input:focus { outline: none; border-color: #00d4ff; }
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #00d4ff, #0088cc);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+        button:hover { opacity: 0.9; }
+        .warning {
+            margin-top: 1.5rem;
+            padding: 0.8rem;
+            background: #1a0a0a;
+            border: 1px solid #ff444433;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: #ff6666;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>🔐 Login</h2>
+        <p class="subtitle">Sign in to your SecureBank account</p>
+        <form action="/login" method="POST">
+            <label>Username</label>
+            <input type="text" name="username" value="admin" placeholder="Enter username">
+            <label>Password</label>
+            <input type="password" name="password" value="password123" placeholder="Enter password">
+            <button type="submit">Sign In</button>
+        </form>
+        <div class="warning">
+            ⚠️ WARNING: This connection is not encrypted. Do not enter real credentials.
+        </div>
+    </div>
+</body>
+</html>

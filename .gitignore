@@ -1,0 +1,34 @@
+# =============================================
+# Instructor-only files (not for participants)
+# =============================================
+DEPLOY_EC2.md
+
+# =============================================
+# Antigravity / IDE / System files
+# =============================================
+.gemini/
+.agent/
+.agents/
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+AGENTS.md
+CLAUDE.md
+
+# =============================================
+# Next.js webapp build artifacts
+# =============================================
+webapp/node_modules/
+webapp/.next/
+webapp/out/
+webapp/.env
+webapp/.env.local
+
+# =============================================
+# Misc
+# =============================================
+*.pcap
+*.log
