@@ -40,7 +40,7 @@ The **Victim** container simulates a user constantly logging in and transferring
 
 ```bash
 sudo apt update
-sudo apt install -y docker.io docker-compose-plugin
+sudo apt install -y docker.io docker-compose
 sudo systemctl start docker
 sudo systemctl enable docker
 
@@ -275,7 +275,57 @@ docker compose down --rmi all
 
 After completing the local labs, pivot to attacking a live cloud-hosted version of the vulnerable app. See [DEPLOY_EC2.md](./DEPLOY_EC2.md) for deployment instructions.
 
-Participants use Wireshark on the workshop WiFi to capture plain-text HTTP traffic to the EC2 instance, then apply the same session hijacking and replay attack techniques from Labs 6 & 7.
+In this phase, we map the concepts from the local lab to a real-world scenario. The vulnerable application is deployed on an EC2 instance without HTTPS. We will use Wireshark to capture credentials and perform session hijacking and replay attacks against the live server.
+
+### Step 1: Start Packet Capture (Wireshark)
+
+1. Open **Wireshark** on your machine.
+2. Select your active internet-facing network interface (e.g., `eth0`, `wlan0`, or `Wi-Fi`) and double-click to start capturing packets.
+3. In the display filter bar at the top, type `http` and press Enter to filter out background noise.
+
+### Step 2: Generate Target Traffic
+
+1. Open your web browser and navigate to the deployed EC2 instance: `http://<EC2-PUBLIC-IP>`.
+2. Act as the victim: log in to the application and interact with it.
+3. Perform a transfer action: Send funds to another user on the platform.
+4. Log out or close the browser.
+
+### Step 3: Analyze the Capture & Steal the Session
+
+1. Go back to Wireshark and click the red square button to **Stop** the capture.
+2. Look through the captured packets for the HTTP `POST` request to `/api/transfer` or `/api/login`.
+3. Right-click on the packet and select **Follow -> HTTP Stream**. 
+4. Look at the request headers sent by the client. Find the `Cookie` header:
+   ```http
+   Cookie: session_token=...
+   ```
+5. Copy the entire `session_token` value. This is the victim's active session!
+
+### Step 4: Session Hijacking
+
+We will use the stolen session token to impersonate the victim without needing their password.
+
+1. Open a terminal.
+2. Use `curl` to make an authenticated request to the server, passing the stolen cookie as your identity. Let's try to access an authenticated endpoint or perform an action:
+   ```bash
+   curl -v -b "session_token=<YOUR_STOLEN_TOKEN>" http://<EC2-PUBLIC-IP>/api/transfer
+   ```
+   *(Alternatively, use a browser extension like "Cookie Editor" to manually add the `session_token` cookie to your browser for `http://<EC2-PUBLIC-IP>`, then refresh the page to be logged in as the victim.)*
+
+### Step 5: Replay Attack
+
+We will take the exact transfer request the victim made and replay it to drain their account.
+
+1. In the Wireshark HTTP Stream from Step 3, locate the raw JSON body of the `/api/transfer` POST request (e.g., `{"to":"user2","amount":500}`).
+2. Open your terminal and run a `curl` command to replay the exact same transfer request using the stolen session token, but change the recipient to yourself!
+   ```bash
+   curl -s -X POST http://<EC2-PUBLIC-IP>/api/transfer \
+     -b "session_token=<YOUR_STOLEN_TOKEN>" \
+     -H "Content-Type: application/json" \
+     -d '{"to":"hacker","amount":500}'
+   ```
+3. **Result:** You should receive a success response from the server! The transfer went through again, even though the victim didn't authorize this new transaction.
+4. Try writing a quick bash loop to replay it multiple times and completely empty the victim's account before the session expires.
 
 ---
 
