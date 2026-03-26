@@ -54,8 +54,8 @@ sudo usermod -aG docker $USER
 ### 2. Clone and Launch the Lab
 
 ```bash
-git clone https://github.com/icyclestick/dns-workshop-2.git
-cd dns-workshop-2
+git clone https://github.com/icyclestick/safebank-workshop.git
+cd safebank-workshop
 
 # Start the victim network
 sudo docker compose up -d
