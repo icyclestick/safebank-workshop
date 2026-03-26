@@ -2,10 +2,8 @@
 # Instructor-only files (not for participants)
 # =============================================
 DEPLOY_EC2.md
+PRESENTATION_GUIDE.md
 
-# =============================================
-# Antigravity / IDE / System files
-# =============================================
 .gemini/
 .agent/
 .agents/
